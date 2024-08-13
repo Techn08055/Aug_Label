@@ -1,16 +1,34 @@
 from transformers import AutoProcessor, AutoModelForCausalLM
-from PIL import Image
+from PIL import Image, ImageDraw
 import requests
 import torch
 import matplotlib.pyplot as plt  
 import matplotlib.patches as patches  
 
 def load_model():
+    """Loads Florence-2-large model and its processor
+
+    Returns:
+        model (AutoModelForCausalLM): Florence-2-large model
+        processor (AutoProcessor): Processor for the model
+    """
     model = AutoModelForCausalLM.from_pretrained("microsoft/Florence-2-large", torch_dtype=torch_dtype, trust_remote_code=True).to(device)
     processor = AutoProcessor.from_pretrained("microsoft/Florence-2-large", trust_remote_code=True)
     return model, processor
 
-def run_example(model, processor,task_prompt, text_input=None):
+def run_example(model,image, processor,task_prompt, text_input=None):
+    """Runs an example using the model and processor
+
+    Args:
+        model (AutoModelForCausalLM): The model to be used for the example
+        image (PIL.Image): The image to be used for the example
+        processor (AutoProcessor): The processor to be used for the example
+        task_prompt (str): The task prompt for the example
+        text_input (str, optional): The text input for the example. Defaults to None.
+
+    Returns:
+        dict: The parsed answer from the example
+    """
     if text_input is None:
         prompt = task_prompt
     else:
@@ -34,8 +52,7 @@ def run_example(model, processor,task_prompt, text_input=None):
     return parsed_answer
 
 def convert_to_od_format(data):  
-    """  
-    Converts a dictionary with 'bboxes' and 'bboxes_labels' into a dictionary with separate 'bboxes' and 'labels' keys.  
+    """Converts a dictionary with 'bboxes' and 'bboxes_labels' into a dictionary with separate 'bboxes' and 'labels' keys.  
   
     Parameters:  
     - data: The input dictionary with 'bboxes', 'bboxes_labels', 'polygons', and 'polygons_labels' keys.  
@@ -55,39 +72,38 @@ def convert_to_od_format(data):
       
     return od_results  
 
-def plot_bbox(image, data):
-   # Create a figure and axes  
-    fig, ax = plt.subplots()  
-      
-    # Display the image  
-    ax.imshow(image)  
-      
-    # Plot each bounding box  
+def write_image(image, data):
+    """Draws bounding boxes on an image
+
+    Args:
+        image (PIL.Image): The image to draw on
+        data (dict): The data containing the bounding box coordinates and labels
+    """
     for bbox, label in zip(data['bboxes'], data['labels']):  
-        # Unpack the bounding box coordinates  
-        x1, y1, x2, y2 = bbox  
-        # Create a Rectangle patch  
-        rect = patches.Rectangle((x1, y1), x2-x1, y2-y1, linewidth=1, edgecolor='r', facecolor='none')  
-        # Add the rectangle to the Axes  
-        ax.add_patch(rect)  
-        # Annotate the label  
-        plt.text(x1, y1, label, color='white', fontsize=8, bbox=dict(facecolor='red', alpha=0.5))  
-      
-    # Remove the axis ticks and labels  
-    ax.axis('off')  
-      
-    # Show the plot  
-    plt.show()  
+        x1, y1, x2, y2 = bbox 
+        draw = ImageDraw.Draw(image, "RGBA")
+        draw.rectangle(((x1, y1),(x2, y2)), fill=(200, 100, 0, 127),outline=(0, 0, 0, 127), width=3)
+        # draw.rectangle(((280, 10), (10b10, 706)), outline=(0, 0, 0, 127), width=3)
+        image.save('orange-cat.png')
+    
+
+def main():
+    """Runs the main function
+
+    This function loads the model and processor, runs an example, converts the results to object detection format, and writes the image with bounding boxes
+    """
+    url = "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/transformers/tasks/car.jpg?download=true"
+    image = Image.open(requests.get(url, stream=True).raw)
+    model, processor = load_model()
+    task_prompt = '<OPEN_VOCABULARY_DETECTION>'
+    results = run_example(model,image, processor,task_prompt, text_input="a green car")
+    print(results)
+    bbox_results  = convert_to_od_format(results['<OPEN_VOCABULARY_DETECTION>'])
+    print(bbox_results)
+    write_image(image, bbox_results)
 
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-url = "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/transformers/tasks/car.jpg?download=true"
-image = Image.open(requests.get(url, stream=True).raw)
-model, processor = load_model()
-task_prompt = '<OPEN_VOCABULARY_DETECTION>'
-results = run_example(model, processor,task_prompt, text_input="a green car")
-print(results)
-bbox_results  = convert_to_od_format(results['<OPEN_VOCABULARY_DETECTION>'])
-print(bbox_results)
-plot_bbox(image, bbox_results)
+if __name__ == '__main__':
+    main()
