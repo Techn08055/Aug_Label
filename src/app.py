@@ -1,60 +1,45 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-from PIL import Image
 import os
-# import torch
-# from torchvision import transforms
+from flask import Flask, request, render_template
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
 
-# Placeholder for loading the Florence-2 model
-# Replace this with the actual loading code if available
-# def load_model():
-#     model = None  # Load Florence-2 model here
-#     return model
+# Directory to save uploaded files
+UPLOAD_FOLDER = 'src/static/uploads/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# model = load_model()
+# Allowed extensions for uploaded files
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Image preprocessing function
-# def preprocess_image(image_path):
-#     image = Image.open(image_path).convert("RGB")
-#     transform = transforms.Compose([
-#         transforms.Resize((256, 256)),
-#         transforms.ToTensor(),
-#     ])
-#     return transform(image).unsqueeze(0)
+# Function to check if the file has an allowed extension
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Placeholder for generating bounding boxes
-# Replace this with actual inference code
-def generate_bounding_boxes(image_tensor):
-    bounding_boxes = [
-        {"x": 50, "y": 50, "width": 100, "height": 100}
-    ]
-    return bounding_boxes
+# Main route for upload form
+@app.route('/')
+def upload_form():
+    return render_template('upload_folder.html')
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        if "file" not in request.files:
-            return redirect(request.url)
-        file = request.files["file"]
-        if file.filename == "":
-            return redirect(request.url)
-        
-        if file:
-            filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
-            file.save(filepath)
-            
-            # image_tensor = preprocess_image(filepath)
-            # bounding_boxes = generate_bounding_boxes(image_tensor)
-            
-            # For simplicity, returning bounding boxes as text
-            return render_template("index.html", image_path=file.filename)
-    return render_template("index.html")
+# Route to handle folder uploads
+@app.route('/', methods=['POST'])
+def upload_folder():
+    if 'files[]' not in request.files:
+        return 'No files part'
+    
+    files = request.files.getlist('files[]')
+    uploaded_filenames = []
 
-@app.route("/uploads/<filename>")
-def send_file(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            uploaded_filenames.append(filename)
+    
+    if not uploaded_filenames:
+        return 'No files uploaded or invalid file types'
+    
+    return f"Uploaded files: {', '.join(uploaded_filenames)}"
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.run(debug=True)

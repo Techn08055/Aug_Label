@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Folder of Images</title>
+</head>
+<body>
+    <h2>Upload a Folder of Images</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="files[]" webkitdirectory multiple>
+        <input type="submit" value="Upload">
+    </form>
+</body>
+</html>
