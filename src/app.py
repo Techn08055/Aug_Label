@@ -1,6 +1,8 @@
 import os
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for, flash
 from werkzeug.utils import secure_filename
+from flask_mail import Mail, Message
+from main import run_example
 
 app = Flask(__name__)
 
@@ -10,6 +12,16 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Allowed extensions for uploaded files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Configuration for Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Use Gmail's SMTP server
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'your_email@gmail.com'  # Replace with your email
+app.config['MAIL_PASSWORD'] = 'your_password'  # Replace with your email password
+app.config['MAIL_DEFAULT_SENDER'] = 'your_email@gmail.com'  # Default sender
+
+mail = Mail(app)
 
 # Function to check if the file has an allowed extension
 def allowed_file(filename):
