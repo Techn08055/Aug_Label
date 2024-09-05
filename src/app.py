@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, render_template, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
+from PIL import Image
 from main import run_example
 
 app = Flask(__name__)
@@ -44,7 +45,12 @@ def upload_folder():
     for file in files:
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            image = Image.open(filepath).convert("RGB")
+            task_prompt = '<OPEN_VOCABULARY_DETECTION>'
+            results = run_example(image, task_prompt, text_input="a green car")
+            print(results)
             uploaded_filenames.append(filename)
     
     if not uploaded_filenames:
