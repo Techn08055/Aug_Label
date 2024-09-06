@@ -1,9 +1,7 @@
 import os
-from flask import Flask, request, render_template, redirect, url_for, flash
+import subprocess
+from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
-from flask_mail import Mail, Message
-from PIL import Image
-from main import run_example
 
 app = Flask(__name__)
 
@@ -14,49 +12,43 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Allowed extensions for uploaded files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# Configuration for Flask-Mail
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Use Gmail's SMTP server
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'your_email@gmail.com'  # Replace with your email
-app.config['MAIL_PASSWORD'] = 'your_password'  # Replace with your email password
-app.config['MAIL_DEFAULT_SENDER'] = 'your_email@gmail.com'  # Default sender
-
-mail = Mail(app)
-
-# Function to check if the file has an allowed extension
+# Check if the file has an allowed extension
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Main route for upload form
+# Main route for file upload
 @app.route('/')
 def upload_form():
-    return render_template('upload_folder.html')
+    return render_template('upload_message.html')
 
-# Route to handle folder uploads
+# Route to handle image uploads
 @app.route('/', methods=['POST'])
-def upload_folder():
-    if 'files[]' not in request.files:
-        return 'No files part'
-    
-    files = request.files.getlist('files[]')
-    uploaded_filenames = []
+def upload_file():
+    if 'file' not in request.files:
+        return 'No file part'
+    file = request.files['file']
+    if file.filename == '':
+        return 'No selected file'
+    if file and allowed_file(file.filename):
+        # Save the uploaded file
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
 
-    for file in files:
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            image = Image.open(filepath).convert("RGB")
-            task_prompt = '<OPEN_VOCABULARY_DETECTION>'
-            results = run_example(image, task_prompt, text_input="a green car")
-            print(results)
-            uploaded_filenames.append(filename)
-    
-    if not uploaded_filenames:
-        return 'No files uploaded or invalid file types'
-    
-    return f"Uploaded files: {', '.join(uploaded_filenames)}"
+        # Display message to the user
+        message = "We will send you pictures in a few hours."
+
+        # Call main.py asynchronously, passing the uploaded file path
+        run_background_process(filepath)
+
+        return render_template('message.html', message=message)
+
+    return 'File not allowed'
+
+# Function to run main.py in the background
+def run_background_process(filepath):
+    # Run main.py in the background and pass the filepath as an argument
+    subprocess.Popen(['python', 'main.py', filepath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
