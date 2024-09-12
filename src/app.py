@@ -7,7 +7,10 @@ app = Flask(__name__)
 
 # Directory to save uploaded files
 UPLOAD_FOLDER = 'src/static/uploads/'
+LOG_FOLDER = 'logs/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['LOG_FOLDER'] = LOG_FOLDER
+
 
 # Allowed extensions for uploaded files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -48,7 +51,15 @@ def upload_file():
 # Function to run main.py in the background
 def run_background_process(filepath):
     # Run main.py in the background and pass the filepath as an argument
-    subprocess.Popen(['python', 'main.py', filepath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    os.makedirs(app.config['LOG_FOLDER'], exist_ok=True)
+
+    # Log file path
+    log_file = os.path.join(app.config['LOG_FOLDER'], 'processing.log')
+
+    # Open the log file in append mode
+    with open(log_file, 'a') as f:
+        # Run main.py in the background, pass filepath, and redirect stdout/stderr to the log file
+        subprocess.Popen(['python', 'src/main.py', filepath], stdout=f, stderr=subprocess.STDOUT)
 
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
