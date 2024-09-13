@@ -6,9 +6,12 @@
     <title>Upload Image</title>
 </head>
 <body>
-    <h2>Upload an Image</h2>
+    <h2>Upload an Image and Enter Your Email</h2>
     <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" accept="image/*">
+        <label for="email">Email:</label><br>
+        <input type="email" name="email" required><br><br>
+        <label for="file">Select Image:</label><br>
+        <input type="file" name="file" accept="image/*" required><br><br>
         <input type="submit" value="Upload">
     </form>
 </body>
