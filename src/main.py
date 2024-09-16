@@ -98,13 +98,13 @@ def main():
     This function loads the model and processor, runs an example, converts the results to object detection format, and writes the image with bounding boxes.
     """
     # Load the image
-    # url = "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/transformers/tasks/car.jpg?download=true"
     path = sys.argv[1]
+    text_input = sys.argv[2]
     image = Image.open(path)
     cwd = os.getcwd()
     # Run the example
     task_prompt = '<OPEN_VOCABULARY_DETECTION>'
-    results = run_example(image, task_prompt, text_input="a green car")
+    results = run_example(image, task_prompt, text_input)
     print(results)
 
     # Convert the results to object detection format

@@ -28,9 +28,12 @@ def upload_form():
 def upload_file():
     # Capture email from the form
     email = request.form.get('email')
+    what_to_detect = request.form.get('what_to_detect')
+    
     if not email:
         return 'Email is required'
-
+    if not what_to_detect:
+        return 'Please specify what to detect in the image.'
     # Handle file upload
     if 'file' not in request.files:
         return 'No file part'
@@ -49,14 +52,14 @@ def upload_file():
         message = f"We will send the pictures to {email} in a few hours."
 
         # Call main.py asynchronously, passing the uploaded file path and email
-        run_background_process(filepath, email)
+        run_background_process(filepath, email, what_to_detect)
 
         return render_template('message.html', message=message)
 
     return 'File not allowed'
 
 # Function to run main.py in the background and capture logs
-def run_background_process(filepath, email):
+def run_background_process(filepath, email, what_to_detect):
     # Ensure logs directory exists
     os.makedirs(app.config['LOG_FOLDER'], exist_ok=True)
 
@@ -66,7 +69,7 @@ def run_background_process(filepath, email):
     # Open the log file in append mode
     with open(log_file, 'a') as f:
         # Run main.py in the background, pass filepath and email, and redirect stdout/stderr to the log file
-        subprocess.Popen(['python', 'src/main.py', filepath], stdout=f, stderr=subprocess.STDOUT)
+        subprocess.Popen(['python', 'src/main.py', filepath, what_to_detect], stdout=f, stderr=subprocess.STDOUT)
 
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
