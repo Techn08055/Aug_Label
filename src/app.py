@@ -35,28 +35,35 @@ def upload_file():
     if not what_to_detect:
         return 'Please specify what to detect in the image.'
     # Handle file upload
-    if 'file' not in request.files:
-        return 'No file part'
+    if 'files[]' not in request.files:
+        return 'No files part'
     
-    file = request.files['file']
-    if file.filename == '':
-        return 'No selected file'
+    files = request.files.getlist('files[]')
+    if len(files) == 0:
+        return 'No selected files'
+    # Create a unique folder to store this user's uploaded images
+    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], email)
+    os.makedirs(user_folder, exist_ok=True)
     
-    if file and allowed_file(file.filename):
-        # Save the uploaded file
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+    # Save each file
+    filepaths = []
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(user_folder, filename)
+            file.save(filepath)
+            filepaths.append(filepath)
 
-        # Display message to the user
-        message = f"We will send the pictures to {email} in a few hours."
+    if not filepaths:
+        return 'No valid files uploaded.'
 
-        # Call main.py asynchronously, passing the uploaded file path and email
-        run_background_process(filepath, email, what_to_detect)
+    # Display message to the user
+    message = f"We will send the pictures to {email} in a few hours."
 
-        return render_template('message.html', message=message)
+    # Call main.py asynchronously, passing the uploaded file path and email
+    run_background_process(user_folder, email, what_to_detect)
 
-    return 'File not allowed'
+    return render_template('message.html', message=message)
 
 # Function to run main.py in the background and capture logs
 def run_background_process(filepath, email, what_to_detect):

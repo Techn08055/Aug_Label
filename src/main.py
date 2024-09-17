@@ -100,19 +100,19 @@ def main():
     # Load the image
     path = sys.argv[1]
     text_input = sys.argv[2]
-    image = Image.open(path)
-    cwd = os.getcwd()
-    # Run the example
-    task_prompt = '<OPEN_VOCABULARY_DETECTION>'
-    results = run_example(image, task_prompt, text_input)
-    print(results)
+    for filename in os.listdir(path):
+        image = Image.open(path + "/" + filename)
+        # Run the example
+        task_prompt = '<OPEN_VOCABULARY_DETECTION>'
+        results = run_example(image, task_prompt, text_input)
+        print(results)
 
-    # Convert the results to object detection format
-    bbox_results = convert_to_od_format(results['<OPEN_VOCABULARY_DETECTION>'])
-    print(bbox_results)
+        # Convert the results to object detection format
+        bbox_results = convert_to_od_format(results['<OPEN_VOCABULARY_DETECTION>'])
+        print(bbox_results)
 
-    # Write the image with bounding boxes
-    write_image(image, bbox_results)
+        # Write the image with bounding boxes
+        write_image(image, bbox_results)
 
 
 if __name__ == '__main__':

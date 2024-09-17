@@ -12,8 +12,8 @@
         <input type="email" name="email" required><br><br>
         <label for="what_to_detect">What to detect (e.g., car, person, tree):</label><br>
         <input type="text" name="what_to_detect" required><br><br>
-        <label for="file">Select Image:</label><br>
-        <input type="file" name="file" accept="image/*" required><br><br>
+        <label for="files[]">Select Images (Multiple files):</label><br>
+        <input type="file" name="files[]" accept="image/*" multiple required><br><br>
         <input type="submit" value="Upload">
     </form>
 </body>
