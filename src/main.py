@@ -78,18 +78,21 @@ def convert_to_od_format(data):
     return od_results
 
 
-def write_image(image, data):
+def write_image(image, data, path, filename):
     """Draws bounding boxes on an image.
 
     Args:
         image (PIL.Image): The image to draw on.
         data (dict): The data containing the bounding box coordinates and labels.
     """
-    draw = ImageDraw.Draw(image, "RGBA")
+    file1 = open (path + '/' + filename.split('.')[0] + '.txt', 'w')
+    # draw = ImageDraw.Draw(image, "RGBA")
     for bbox, label in zip(data['bboxes'], data['labels']):
-        x1, y1, x2, y2 = bbox
-        draw.rectangle(((x1, y1), (x2, y2)), fill=(200, 100, 0, 127), outline=(0, 0, 0, 127), width=3)
-    image.save('orange-cat.png')
+        file1.write(str(label) + " " + str(bbox[0]) + " " + str(bbox[1]) + " " + str(bbox[2]) + " " + str(bbox[3]) + "\n")
+        # x1, y1, x2, y2 = bbox
+        # draw.rectangle(((x1, y1), (x2, y2)), fill=(200, 100, 0, 127), outline=(0, 0, 0, 127), width=3)
+    file1.close()
+    # image.save(path + '/' + +filename )
 
 
 def main():
@@ -105,14 +108,11 @@ def main():
         # Run the example
         task_prompt = '<OPEN_VOCABULARY_DETECTION>'
         results = run_example(image, task_prompt, text_input)
-        print(results)
-
         # Convert the results to object detection format
         bbox_results = convert_to_od_format(results['<OPEN_VOCABULARY_DETECTION>'])
-        print(bbox_results)
 
         # Write the image with bounding boxes
-        write_image(image, bbox_results)
+        write_image(image, bbox_results, path, filename)
 
 
 if __name__ == '__main__':
