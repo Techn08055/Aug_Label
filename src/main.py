@@ -103,16 +103,17 @@ def main():
     # Load the image
     path = sys.argv[1]
     text_input = sys.argv[2]
+    # text_input = text_input.split(',')
     for filename in os.listdir(path):
         image = Image.open(path + "/" + filename)
         # Run the example
-        task_prompt = '<OPEN_VOCABULARY_DETECTION>'
+        task_prompt = '<CAPTION_TO_PHRASE_GROUNDING>'
         results = run_example(image, task_prompt, text_input)
         # Convert the results to object detection format
-        bbox_results = convert_to_od_format(results['<OPEN_VOCABULARY_DETECTION>'])
-
+        # bbox_results = convert_to_od_format(results['<PHRASE_GROUNDING>'])
+        print(results)
         # Write the image with bounding boxes
-        write_image(image, bbox_results, path, filename)
+        write_image(image, results, path, filename)
 
 
 if __name__ == '__main__':
