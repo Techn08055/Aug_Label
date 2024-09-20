@@ -86,13 +86,13 @@ def write_image(image, data, path, filename):
         data (dict): The data containing the bounding box coordinates and labels.
     """
     file1 = open (path + '/' + filename.split('.')[0] + '.txt', 'w')
-    # draw = ImageDraw.Draw(image, "RGBA")
+    draw = ImageDraw.Draw(image, "RGBA")
     for bbox, label in zip(data['bboxes'], data['labels']):
         file1.write(str(label) + " " + str(bbox[0]) + " " + str(bbox[1]) + " " + str(bbox[2]) + " " + str(bbox[3]) + "\n")
-        # x1, y1, x2, y2 = bbox
-        # draw.rectangle(((x1, y1), (x2, y2)), fill=(200, 100, 0, 127), outline=(0, 0, 0, 127), width=3)
+        x1, y1, x2, y2 = bbox
+        draw.rectangle(((x1, y1), (x2, y2)), fill=(200, 100, 0, 127), outline=(0, 0, 0, 127), width=3)
     file1.close()
-    # image.save(path + '/' + +filename )
+    image.save(path + '/' + "_"+filename )
 
 
 def main():
@@ -113,7 +113,7 @@ def main():
         # bbox_results = convert_to_od_format(results['<PHRASE_GROUNDING>'])
         print(results)
         # Write the image with bounding boxes
-        write_image(image, results, path, filename)
+        write_image(image, results['<CAPTION_TO_PHRASE_GROUNDING>'], path, filename)
 
 
 if __name__ == '__main__':
