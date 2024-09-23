@@ -1,4 +1,4 @@
-Auto_Labeller
+Auto_Label
 ==============================
 
 The project aims to build an easy auto labelling tool, reducing any manual hours
