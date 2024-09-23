@@ -86,13 +86,9 @@ def write_image(image, data, path, filename):
         data (dict): The data containing the bounding box coordinates and labels.
     """
     file1 = open (path + '/' + filename.split('.')[0] + '.txt', 'w')
-    draw = ImageDraw.Draw(image, "RGBA")
     for bbox, label in zip(data['bboxes'], data['labels']):
-        file1.write(str(label) + " " + str(bbox[0]) + " " + str(bbox[1]) + " " + str(bbox[2]) + " " + str(bbox[3]) + "\n")
-        x1, y1, x2, y2 = bbox
-        draw.rectangle(((x1, y1), (x2, y2)), fill=(200, 100, 0, 127), outline=(0, 0, 0, 127), width=3)
+        file1.write(str(label) + " " + str(int(bbox[0])) + " " + str(int(bbox[1])) + " " + str(int(bbox[2])) + " " + str(int(bbox[3])) + "\n")
     file1.close()
-    image.save(path + '/' + "_"+filename )
 
 
 def main():
