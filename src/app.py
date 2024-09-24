@@ -58,7 +58,7 @@ def upload_file():
         return 'No valid files uploaded.'
 
     # Display message to the user
-    message = f"We will send the pictures to {email} in a few hours."
+    message = f"We will send the pictures to {email} soon."
 
     # Call main.py asynchronously, passing the uploaded file path and email
     run_background_process(user_folder, email, what_to_detect)
