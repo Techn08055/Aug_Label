@@ -101,15 +101,16 @@ def main():
     text_input = sys.argv[2]
     # text_input = text_input.split(',')
     for filename in os.listdir(path):
-        image = Image.open(path + "/" + filename)
-        # Run the example
-        task_prompt = '<CAPTION_TO_PHRASE_GROUNDING>'
-        results = run_example(image, task_prompt, text_input)
-        # Convert the results to object detection format
-        # bbox_results = convert_to_od_format(results['<PHRASE_GROUNDING>'])
-        print(results)
-        # Write the image with bounding boxes
-        write_image(image, results['<CAPTION_TO_PHRASE_GROUNDING>'], path, filename)
+        if filename.endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+            image = Image.open(path + "/" + filename)
+            # Run the example
+            task_prompt = '<CAPTION_TO_PHRASE_GROUNDING>'
+            results = run_example(image, task_prompt, text_input)
+            # Convert the results to object detection format
+            # bbox_results = convert_to_od_format(results['<PHRASE_GROUNDING>'])
+            print(results)
+            # Write the image with bounding boxes
+            write_image(image, results['<CAPTION_TO_PHRASE_GROUNDING>'], path, filename)
 
 
 if __name__ == '__main__':
